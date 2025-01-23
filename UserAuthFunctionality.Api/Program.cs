@@ -1,4 +1,7 @@
+using UserAuthFunctionality.Api;
+
 var builder = WebApplication.CreateBuilder(args);
+var config = builder.Configuration;
 
 // Add services to the container.
 
@@ -17,6 +20,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
+builder.Services.Register(config);
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
