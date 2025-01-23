@@ -1,12 +1,22 @@
-﻿using FluentValidation;
+﻿using AutoMapper;
+using CloudinaryDotNet.Actions;
+using CloudinaryDotNet;
+using FluentValidation;
 using FluentValidation.AspNetCore;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using UserAuthFunctionality.Application.Profiles;
+using UserAuthFunctionality.Application.Settings;
 using UserAuthFunctionality.Application.Validators.AuthValidators;
 using UserAuthFunctionality.Core.Entities;
 using UserAuthFunctionality.DataAccess.Data;
+using UserAuthFunctionality.Application.Exceptions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace UserAuthFunctionality.Api
 {
@@ -61,6 +71,65 @@ namespace UserAuthFunctionality.Api
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
                 options.User.RequireUniqueEmail = true;
             }).AddDefaultTokenProviders().AddEntityFrameworkStores<ApplicationDbContext>();
+           services.AddSingleton<IMapper>(provider =>
+            {
+                var scopeFactory = provider.GetRequiredService<IServiceScopeFactory>();
+
+              //  using var scope = scopeFactory.CreateScope();
+                //var httpContextAccessor = scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>();
+                //var photoOrVideoService = scope.ServiceProvider.GetRequiredService<IPhotoOrVideoService>();
+
+                var mapperConfig = new MapperConfiguration(cfg =>
+                {
+                    cfg.AddProfile(new MapperProfile());
+                });
+
+                return mapperConfig.CreateMapper();
+            });
+
+            services.AddSingleton(provider =>
+            {
+                var settings = provider.GetRequiredService<IOptions<CloudinarySettings>>().Value;
+
+                Console.WriteLine($"Initializing Cloudinary with: {settings.CloudName}, {settings.ApiKey}, {settings.ApiSecret}");
+
+                var account = new CloudinaryDotNet.Account(settings.CloudName, settings.ApiKey, settings.ApiSecret);
+                var cloudinary = new Cloudinary(account);
+                try
+                {
+                    var result = cloudinary.ListResources(new ListResourcesParams { MaxResults = 1 });
+                    if (result.Error != null)
+                    {
+                        throw new CustomException(400, $"Cloudinary Account Error: {result.Error.Message}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new CustomException(400, ex.Message);
+                }
+
+                return cloudinary;
+            });
+            services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+       .AddJwtBearer(options =>
+       {
+           options.TokenValidationParameters = new TokenValidationParameters
+           {
+               ValidateIssuer = true,
+               ValidateAudience = true,
+               ValidateLifetime = true,
+               ValidateIssuerSigningKey = true,
+               ValidIssuer = configuration["Jwt:Issuer"],
+               ValidAudience = configuration["Jwt:Audience"],
+               IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"])),
+               ClockSkew = TimeSpan.Zero
+           };
+       });
         }
 
     }
