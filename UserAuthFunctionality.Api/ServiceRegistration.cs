@@ -21,6 +21,9 @@ using UserAuthFunctionality.Application.Interfaces;
 using UserAuthFunctionality.Application.Implementations;
 using Microsoft.AspNetCore.Mvc;
 using UserAuthFunctionality.Core.Entities.Common;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
+using System.Reflection;
 
 namespace UserAuthFunctionality.Api
 {
@@ -162,6 +165,20 @@ namespace UserAuthFunctionality.Api
                    return new BadRequestObjectResult(response);
                };
            });
+          services.AddRateLimiter(options =>
+            {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+                options.AddFixedWindowLimiter("fixed", options =>
+                {
+                    options.PermitLimit = 10;
+                    options.Window = TimeSpan.FromSeconds(10);
+                    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                    options.QueueLimit = 5;
+                });
+            });
+           services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.Load("UserAuthFunctionality.Application")));
+
             services.AddScoped<IPhotoService, PhotoService>();
             services.AddScoped<IAuthService, AuthService>();  
             services.AddScoped<ITokenService, TokenService>();

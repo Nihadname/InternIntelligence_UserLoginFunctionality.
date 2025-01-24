@@ -115,7 +115,7 @@ namespace UserAuthFunctionality.Application.Implementations
                 Token = _tokenService.GetToken(SecretKey, Audience, Issuer, User, roles)
             });
         }
-        public async Task<Result<bool>> ValidateToken([FromHeader] string Authorization)
+        public async Task<Result<bool>> ValidateToken( string Authorization)
         {
             if (string.IsNullOrEmpty(Authorization) || !Authorization.StartsWith("Bearer "))
             {
