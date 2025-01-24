@@ -31,6 +31,7 @@ namespace UserAuthFunctionality.Core.Entities
         public string VerificationCode { get; set; }
         public string Salt { get; set; }
         public DateTime? ExpiredDate { get; set; }
+        public ICollection<RefreshToken> RefreshTokens { get; set; }
         private int CalculateAgeOfUser(DateTime birthDate)
         {
             var Now = DateTime.Now;

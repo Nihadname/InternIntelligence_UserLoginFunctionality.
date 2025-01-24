@@ -14,5 +14,6 @@ namespace UserAuthFunctionality.Application.Interfaces
         Task<Result<Task>> RegisterUser(RegisterDto registerDto);
         Task<Result<AuthLoginResponseDto>> Login(LoginDto loginDto);
         Task<Result<bool>> ValidateToken([FromHeader] string Authorization);
+        Task<Result<AuthLoginResponseDto>> RefreshToken();
     }
 }

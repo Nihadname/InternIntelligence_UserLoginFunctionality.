@@ -1,15 +1,10 @@
 ﻿using AutoMapper;
+using Azure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 using UserAuthFunctionality.Application.AppDefaults;
 using UserAuthFunctionality.Application.Dtos.Auth;
 using UserAuthFunctionality.Application.Helper.Enums;
@@ -17,6 +12,7 @@ using UserAuthFunctionality.Application.Interfaces;
 using UserAuthFunctionality.Application.Settings;
 using UserAuthFunctionality.Core.Entities;
 using UserAuthFunctionality.Core.Entities.Common;
+using UserAuthFunctionality.DataAccess.Data;
 
 namespace UserAuthFunctionality.Application.Implementations
 {
@@ -29,7 +25,8 @@ namespace UserAuthFunctionality.Application.Implementations
         private readonly IPhotoService _photoService;
         private readonly IMapper _mapper;
         private readonly ITokenService _tokenService;
-        public AuthService(IOptions<JwtSettings> jwtSettings, UserManager<AppUser> userManager, IPhotoService photoService, IMapper mapper, RoleManager<IdentityRole> roleManager, IHttpContextAccessor httpContextAccessor, ITokenService tokenService)
+        private readonly ApplicationDbContext _applicationDbContext;
+        public AuthService(IOptions<JwtSettings> jwtSettings, UserManager<AppUser> userManager, IPhotoService photoService, IMapper mapper, RoleManager<IdentityRole> roleManager, IHttpContextAccessor httpContextAccessor, ITokenService tokenService, ApplicationDbContext applicationDbContext)
         {
             _jwtSettings = jwtSettings.Value;
             _userManager = userManager;
@@ -38,6 +35,7 @@ namespace UserAuthFunctionality.Application.Implementations
             _roleManager = roleManager;
             _httpContextAccessor = httpContextAccessor;
             _tokenService = tokenService;
+            _applicationDbContext = applicationDbContext;
         }
 
         public async Task<Result<Task>> RegisterUser(RegisterDto registerDto)
@@ -109,6 +107,17 @@ namespace UserAuthFunctionality.Application.Implementations
             var Audience = _jwtSettings.Audience;
             var SecretKey = _jwtSettings.secretKey;
             var Issuer = _jwtSettings.Issuer;
+            var refreshTokenGenerated = _tokenService.GenerateRefreshToken();
+            RefreshToken refreshToken= new RefreshToken { AppUser = User , Token= refreshTokenGenerated };
+            User.RefreshTokens.Add(refreshToken);
+            await _userManager.UpdateAsync(User);
+            _httpContextAccessor.HttpContext?.Response.Cookies.Append("refreshToken", refreshTokenGenerated, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddDays(7)
+            });
             return Result<AuthLoginResponseDto>.Success(new AuthLoginResponseDto
             {
                 IsLogined = true,
@@ -137,6 +146,48 @@ namespace UserAuthFunctionality.Application.Implementations
           return  Result<bool>.Success(true);
 
         }
+        public async Task<Result<AuthLoginResponseDto>> RefreshToken()
+        {
+            
+            var refreshToken = _httpContextAccessor.HttpContext?.Request.Cookies["refreshToken"];
+
+            if(string.IsNullOrEmpty(refreshToken))
+                return Result<AuthLoginResponseDto>.Failure("RefreshToken", "Refresh token is missing", ErrorType.UnauthorizedError);
+            var refreshTokenFetchingFromDatabase = await _applicationDbContext
+                .refreshTokens
+                .Include(s=>s.AppUser)
+                .FirstOrDefaultAsync(s=>s.Token == refreshToken);
+            if(refreshTokenFetchingFromDatabase == null)
+                return Result<AuthLoginResponseDto>.Failure("RefreshToken", "Invalid refresh token", ErrorType.UnauthorizedError);
+
+            if (!refreshTokenFetchingFromDatabase.IsActive)
+                return Result<AuthLoginResponseDto>.Failure("RefreshToken", "Invalid or expired refresh token", ErrorType.UnauthorizedError);
+            var user = refreshTokenFetchingFromDatabase.AppUser;
+            if (user == null)
+                return Result<AuthLoginResponseDto>.Failure("Id", "User does not exist", ErrorType.UnauthorizedError);
+
+            IList<string> roles = await _userManager.GetRolesAsync(user);
+            var Audience = _jwtSettings.Audience;
+            var SecretKey = _jwtSettings.secretKey;
+            var Issuer = _jwtSettings.Issuer;
+            var newrefreshTokenGenerated = _tokenService.GenerateRefreshToken();
+            var newAccessToken = _tokenService.GetToken(SecretKey, Audience, Issuer, user, roles);
+            RefreshToken refreshTokenAsObject = new RefreshToken { AppUser = user, Token = newrefreshTokenGenerated };
+
+           await _applicationDbContext.refreshTokens.AddAsync(refreshTokenAsObject);
+            await _applicationDbContext.SaveChangesAsync();
+
+            _httpContextAccessor.HttpContext?.Response.Cookies.Append("refreshToken", newrefreshTokenGenerated, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddDays(7)
+            });
+            return Result<AuthLoginResponseDto>.Success(new AuthLoginResponseDto { Token = newAccessToken });
+
+        }
+
         //public async Task<string> AddRole()
         //{
         //    if (!await _roleManager.RoleExistsAsync("Admin"))

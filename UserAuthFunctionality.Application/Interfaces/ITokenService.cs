@@ -12,5 +12,7 @@ namespace UserAuthFunctionality.Application.Interfaces
     {
         string GetToken(string SecretKey, string Audience, string Issuer, AppUser existUser, IList<string> roles);
         ClaimsPrincipal ValidateToken(string token);
+        string GenerateRefreshToken();
+
     }
 }

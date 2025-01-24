@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UserAuthFunctionality.Application.Features.Auth.Commands.Login;
+using UserAuthFunctionality.Application.Features.Auth.Commands.RefreshToken;
 using UserAuthFunctionality.Application.Features.Auth.Commands.Register;
 using UserAuthFunctionality.Application.Features.Auth.Queries;
 using UserAuthFunctionality.Application.Interfaces;
@@ -38,6 +39,13 @@ namespace UserAuthFunctionality.Api.Controllers
         public async Task<IActionResult> ValidateToken([FromHeader(Name = "Authorization")] ValidateTokenCommand validateTokenCommand)
         {
             var result = await _mediator.Send(validateTokenCommand);
+            return Ok(result);
+        }
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> RefreshToken(RefreshTokenCommand refreshTokenCommand)
+        {
+            var result = await _mediator.Send(refreshTokenCommand);
             return Ok(result);
         }
     }
