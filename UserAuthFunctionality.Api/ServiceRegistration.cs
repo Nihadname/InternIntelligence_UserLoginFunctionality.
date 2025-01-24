@@ -17,6 +17,10 @@ using UserAuthFunctionality.Application.Exceptions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using UserAuthFunctionality.Application.Interfaces;
+using UserAuthFunctionality.Application.Implementations;
+using Microsoft.AspNetCore.Mvc;
+using UserAuthFunctionality.Core.Entities.Common;
 
 namespace UserAuthFunctionality.Api
 {
@@ -86,7 +90,8 @@ namespace UserAuthFunctionality.Api
 
                 return mapperConfig.CreateMapper();
             });
-
+            services.Configure<CloudinarySettings>(
+    configuration.GetSection("CloudinarySettings"));
             services.AddSingleton(provider =>
             {
                 var settings = provider.GetRequiredService<IOptions<CloudinarySettings>>().Value;
@@ -130,6 +135,36 @@ namespace UserAuthFunctionality.Api
                ClockSkew = TimeSpan.Zero
            };
        });
+            services.AddControllersWithViews()
+           .ConfigureApiBehaviorOptions(opt =>
+           {
+               opt.InvalidModelStateResponseFactory = context =>
+               {
+                   var errorsValidation = context.ModelState
+                       .Where(e => e.Value?.Errors.Count > 0)
+                       .ToDictionary(
+                           x => x.Key,
+                           x => x.Value.Errors.First().ErrorMessage
+                       );
+                   string errors = string.Empty;
+                   foreach (KeyValuePair<string, string> keyValues in errorsValidation)
+                   {
+                       errors += keyValues.Key + " : " + keyValues.Value + ", ";
+                   }
+
+                   var response=Result<string>.Success(errors);
+                   //var response = new
+                   //{
+                   //    message = "Validation errors occurred.",
+                   //    errors
+                   //};
+
+                   return new BadRequestObjectResult(response);
+               };
+           });
+            services.AddScoped<IPhotoService, PhotoService>();
+            services.AddScoped<IAuthService, AuthService>();  
+            services.AddScoped<ITokenService, TokenService>();
         }
 
     }
