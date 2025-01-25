@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using UserAuthFunctionality.Application.Features.Auth.Commands.Login;
 using UserAuthFunctionality.Application.Features.Auth.Commands.RefreshToken;
 using UserAuthFunctionality.Application.Features.Auth.Commands.Register;
+using UserAuthFunctionality.Application.Features.Auth.Commands.UpdateImage;
 using UserAuthFunctionality.Application.Features.Auth.Queries;
 
 namespace UserAuthFunctionality.Api.Controllers
@@ -43,6 +44,12 @@ namespace UserAuthFunctionality.Api.Controllers
         public async Task<IActionResult> RefreshToken(RefreshTokenCommand refreshTokenCommand)
         {
             var result = await _mediator.Send(refreshTokenCommand);
+            return Ok(result);
+        }
+        [HttpPut("UpdateImage")]
+        public async Task<IActionResult> UpdateImage(UpdateImageCommand updateImageCommand)
+        {
+            var result = await _mediator.Send(updateImageCommand);
             return Ok(result);
         }
     }

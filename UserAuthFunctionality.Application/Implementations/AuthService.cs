@@ -191,7 +191,24 @@ namespace UserAuthFunctionality.Application.Implementations
             return Result<AuthLoginResponseDto>.Success(new AuthLoginResponseDto { Token = newAccessToken });
 
         }
-
+        public async Task<Result<string>> UpdateImage(UserUpdateImageDto userUpdateImageDto)
+        {
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Result<string>.Failure("Id", "User Id cannot be null", ErrorType.UnauthorizedError);
+            }
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user is null)
+                return Result<string>.Failure("Id", "this user doesnt exist", ErrorType.UnauthorizedError);
+            if (!string.IsNullOrEmpty(user.Image))
+            {
+                await _photoService.DeletePhotoAsync(user.Image);
+            }
+            user.Image = await _photoService.UploadPhotoAsync(userUpdateImageDto.Image);
+            await _userManager.UpdateAsync(user);
+            return Result<string>.Success(user.Image);
+        }
         //public async Task<string> AddRole()
         //{
         //    if (!await _roleManager.RoleExistsAsync("Admin"))

@@ -15,5 +15,6 @@ namespace UserAuthFunctionality.Application.Interfaces
         Task<Result<AuthLoginResponseDto>> Login(LoginDto loginDto);
         Task<Result<bool>> ValidateToken([FromHeader] string Authorization);
         Task<Result<AuthLoginResponseDto>> RefreshToken();
+        Task<Result<string>> UpdateImage(UserUpdateImageDto userUpdateImageDto);
     }
 }
