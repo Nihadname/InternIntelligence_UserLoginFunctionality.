@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using UserAuthFunctionality.Application.AppDefaults;
 using UserAuthFunctionality.Application.Dtos.Auth;
+using UserAuthFunctionality.Application.Extensions;
 using UserAuthFunctionality.Application.Helper.Enums;
 using UserAuthFunctionality.Application.Interfaces;
 using UserAuthFunctionality.Application.Settings;
@@ -26,7 +27,8 @@ namespace UserAuthFunctionality.Application.Implementations
         private readonly IMapper _mapper;
         private readonly ITokenService _tokenService;
         private readonly ApplicationDbContext _applicationDbContext;
-        public AuthService(IOptions<JwtSettings> jwtSettings, UserManager<AppUser> userManager, IPhotoService photoService, IMapper mapper, RoleManager<IdentityRole> roleManager, IHttpContextAccessor httpContextAccessor, ITokenService tokenService, ApplicationDbContext applicationDbContext)
+        private readonly IEmailService _emailService;
+        public AuthService(IOptions<JwtSettings> jwtSettings, UserManager<AppUser> userManager, IPhotoService photoService, IMapper mapper, RoleManager<IdentityRole> roleManager, IHttpContextAccessor httpContextAccessor, ITokenService tokenService, ApplicationDbContext applicationDbContext, IEmailService emailService)
         {
             _jwtSettings = jwtSettings.Value;
             _userManager = userManager;
@@ -36,6 +38,7 @@ namespace UserAuthFunctionality.Application.Implementations
             _httpContextAccessor = httpContextAccessor;
             _tokenService = tokenService;
             _applicationDbContext = applicationDbContext;
+            _emailService = emailService;
         }
 
         public async Task<Result<Task>> RegisterUser(RegisterDto registerDto)
@@ -69,6 +72,7 @@ namespace UserAuthFunctionality.Application.Implementations
                 return Result<Task>.Failure(null, errors.TrimEnd(',', ' '), ErrorType.SystemError);
             }
             await _userManager.AddToRoleAsync(appUser, AppUserRoleEnum.Member.ToString());
+            await SendVerificationCode(appUser.Email);
             return Result<Task>.Success(Task.CompletedTask);
 
         }
@@ -208,6 +212,37 @@ namespace UserAuthFunctionality.Application.Implementations
             user.Image = await _photoService.UploadPhotoAsync(userUpdateImageDto.Image);
             await _userManager.UpdateAsync(user);
             return Result<string>.Success(user.Image);
+        }
+        public async Task<Result<string>> SendVerificationCode(string email)
+        {
+            if (string.IsNullOrEmpty(email)) return Result<string>.Failure("email", "email is null", ErrorType.ValidationError);
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user is null) return Result<string>.Failure("user", "user is null", ErrorType.NotFoundError);
+            var verificationCode = new Random().Next(100000, 999999).ToString();
+            string salt;
+            string hashedCode = verificationCode.GenerateHash(out salt);
+            user.VerificationCode = hashedCode;
+            user.Salt = salt;
+            user.ExpiredDate = DateTime.UtcNow.AddMinutes(10);
+            user.IsEmailVerificationCodeValid = false;
+            await _userManager.UpdateAsync(user);
+            var body = $"<h1>Welcome!</h1><p>Thank you for joining us. We're excited to have you!, this is your verfication code {verificationCode} </p>";
+            _emailService.SendEmail(body, email, "Verify Code", "Verify Code");
+            return Result<string>.Success("Verification code sent");
+
+        }
+        public async Task<Result<string>> VerifyCode(VerifyCodeDto verifyCodeDto)
+        {
+            var existedUser = await _userManager.FindByEmailAsync(verifyCodeDto.Email);
+            if (existedUser is null) return Result<string>.Failure("User", "User is null", ErrorType.NotFoundError);
+            bool isValid = HashExtension.VerifyHash(verifyCodeDto.Code, existedUser.Salt, existedUser.VerificationCode);
+            if (!isValid || existedUser.ExpiredDate < DateTime.UtcNow)
+                return Result<string>.Failure("Code", "Invalid or expired verification code.", ErrorType.BusinessLogicError);
+            existedUser.IsEmailVerificationCodeValid = true;
+            existedUser.VerificationCode = null;
+            existedUser.ExpiredDate = null;
+            await _userManager.UpdateAsync(existedUser);
+            return Result<string>.Success("Code verified successfully. You can now log in.");
         }
         //public async Task<string> AddRole()
         //{

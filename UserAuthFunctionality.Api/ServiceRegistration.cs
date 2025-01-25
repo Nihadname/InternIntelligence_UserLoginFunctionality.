@@ -182,6 +182,7 @@ namespace UserAuthFunctionality.Api
             services.AddScoped<IPhotoService, PhotoService>();
             services.AddScoped<IAuthService, AuthService>();  
             services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IEmailService, EmailService>();
         }
 
     }
