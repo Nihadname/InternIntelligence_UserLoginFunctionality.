@@ -1,13 +1,10 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UserAuthFunctionality.Application.Features.Auth.Commands.Login;
 using UserAuthFunctionality.Application.Features.Auth.Commands.RefreshToken;
 using UserAuthFunctionality.Application.Features.Auth.Commands.Register;
 using UserAuthFunctionality.Application.Features.Auth.Queries;
-using UserAuthFunctionality.Application.Interfaces;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace UserAuthFunctionality.Api.Controllers
 {

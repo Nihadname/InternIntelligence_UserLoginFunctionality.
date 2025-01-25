@@ -108,7 +108,11 @@ namespace UserAuthFunctionality.Application.Implementations
             var SecretKey = _jwtSettings.secretKey;
             var Issuer = _jwtSettings.Issuer;
             var refreshTokenGenerated = _tokenService.GenerateRefreshToken();
-            RefreshToken refreshToken= new RefreshToken { AppUser = User , Token= refreshTokenGenerated };
+            RefreshToken refreshToken= new RefreshToken { AppUser = User , AppUserId=User.Id,Token = refreshTokenGenerated };
+            if (User.RefreshTokens == null)
+            {
+                User.RefreshTokens = new List<RefreshToken>();
+            }
             User.RefreshTokens.Add(refreshToken);
             await _userManager.UpdateAsync(User);
             _httpContextAccessor.HttpContext?.Response.Cookies.Append("refreshToken", refreshTokenGenerated, new CookieOptions
@@ -172,7 +176,7 @@ namespace UserAuthFunctionality.Application.Implementations
             var Issuer = _jwtSettings.Issuer;
             var newrefreshTokenGenerated = _tokenService.GenerateRefreshToken();
             var newAccessToken = _tokenService.GetToken(SecretKey, Audience, Issuer, user, roles);
-            RefreshToken refreshTokenAsObject = new RefreshToken { AppUser = user, Token = newrefreshTokenGenerated };
+            RefreshToken refreshTokenAsObject = new RefreshToken { AppUser = user, AppUserId = user.Id, Token = newrefreshTokenGenerated };
 
            await _applicationDbContext.refreshTokens.AddAsync(refreshTokenAsObject);
             await _applicationDbContext.SaveChangesAsync();
