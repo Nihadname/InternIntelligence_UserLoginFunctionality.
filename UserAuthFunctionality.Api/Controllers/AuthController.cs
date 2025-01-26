@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using UserAuthFunctionality.Application.Features.Auth.Commands.Login;
 using UserAuthFunctionality.Application.Features.Auth.Commands.RefreshToken;
 using UserAuthFunctionality.Application.Features.Auth.Commands.Register;
+using UserAuthFunctionality.Application.Features.Auth.Commands.SendVerificationCode;
 using UserAuthFunctionality.Application.Features.Auth.Commands.UpdateImage;
+using UserAuthFunctionality.Application.Features.Auth.Commands.VerifyCode;
 using UserAuthFunctionality.Application.Features.Auth.Queries;
 
 namespace UserAuthFunctionality.Api.Controllers
@@ -47,9 +49,24 @@ namespace UserAuthFunctionality.Api.Controllers
             return Ok(result);
         }
         [HttpPut("UpdateImage")]
+        [Authorize]
         public async Task<IActionResult> UpdateImage(UpdateImageCommand updateImageCommand)
         {
             var result = await _mediator.Send(updateImageCommand);
+            return Ok(result);
+        }
+        [HttpGet("VerifyCode")]
+        public async Task<IActionResult> VerifyCode([FromQuery] VerifyCodeCommand verifyCodeCommand)
+        {
+            var result = await _mediator.Send(verifyCodeCommand);
+            return Ok(result);
+
+        }
+        [HttpGet("SendVerificationCode")]
+
+        public async Task<IActionResult> SendVerificationCode(SendVerificationCodeCommand sendVerificationCodeCommand)
+        {
+            var result = await _mediator.Send(sendVerificationCodeCommand);
             return Ok(result);
         }
     }

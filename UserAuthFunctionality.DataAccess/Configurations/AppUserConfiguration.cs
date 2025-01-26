@@ -15,7 +15,6 @@ namespace UserAuthFunctionality.DataAccess.Configurations
         {
             builder.Property(s => s.UserName).HasMaxLength(100).IsRequired(true);
             builder.Property(s => s.fullName).HasMaxLength(150).IsRequired(true);
-            builder.Property(s => s.VerificationCode).HasMaxLength(6);
             builder.HasIndex(s => s.CreatedTime);
             builder.Property(s => s.Email).IsRequired()
             .HasMaxLength(255)

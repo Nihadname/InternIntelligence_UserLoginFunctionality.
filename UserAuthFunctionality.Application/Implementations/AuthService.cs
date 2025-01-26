@@ -107,6 +107,7 @@ namespace UserAuthFunctionality.Application.Implementations
                     return Result<AuthLoginResponseDto>.Failure("UserNameOrGmail", $"you are blocked until {User.BlockedUntil?.ToString("dd MMM yyyy hh:mm")}", ErrorType.BusinessLogicError);
                 }
             }
+            if(!User.IsEmailVerificationCodeValid) return Result<AuthLoginResponseDto>.Failure("VerifyCode", "VerificationCode is not accepted yet ", ErrorType.BusinessLogicError);
             IList<string> roles = await _userManager.GetRolesAsync(User);
             var Audience = _jwtSettings.Audience;
             var SecretKey = _jwtSettings.secretKey;
