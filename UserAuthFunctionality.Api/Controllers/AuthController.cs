@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using UserAuthFunctionality.Application.Features.Auth.Commands.Login;
 using UserAuthFunctionality.Application.Features.Auth.Commands.RefreshToken;
 using UserAuthFunctionality.Application.Features.Auth.Commands.Register;
@@ -13,6 +14,7 @@ namespace UserAuthFunctionality.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableRateLimiting("fixed")]
     public class AuthController : ControllerBase
     { 
         private readonly IMediator _mediator;
@@ -50,7 +52,7 @@ namespace UserAuthFunctionality.Api.Controllers
         }
         [HttpPut("UpdateImage")]
         [Authorize]
-        public async Task<IActionResult> UpdateImage(UpdateImageCommand updateImageCommand)
+        public async Task<IActionResult> UpdateImage([FromQuery]UpdateImageCommand updateImageCommand)
         {
             var result = await _mediator.Send(updateImageCommand);
             return Ok(result);
@@ -64,7 +66,7 @@ namespace UserAuthFunctionality.Api.Controllers
         }
         [HttpGet("SendVerificationCode")]
 
-        public async Task<IActionResult> SendVerificationCode(SendVerificationCodeCommand sendVerificationCodeCommand)
+        public async Task<IActionResult> SendVerificationCode([FromQuery] SendVerificationCodeCommand sendVerificationCodeCommand)
         {
             var result = await _mediator.Send(sendVerificationCodeCommand);
             return Ok(result);

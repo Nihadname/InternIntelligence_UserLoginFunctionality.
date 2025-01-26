@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="Features\Auth\Commands\SendVerificationCode\SendVerificationCodeCommand.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="CloudinaryDotNet" Version="1.27.2" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
