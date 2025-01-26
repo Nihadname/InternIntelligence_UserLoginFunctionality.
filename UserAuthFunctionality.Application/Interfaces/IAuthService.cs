@@ -18,5 +18,6 @@ namespace UserAuthFunctionality.Application.Interfaces
         Task<Result<string>> UpdateImage(UserUpdateImageDto userUpdateImageDto);
         Task<Result<string>> VerifyCode(VerifyCodeDto verifyCodeDto);
         Task<Result<string>> SendVerificationCode(string email);
+        Task<Result<UserGetDto>> Profile();
     }
 }

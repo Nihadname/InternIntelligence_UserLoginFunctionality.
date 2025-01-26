@@ -245,6 +245,22 @@ namespace UserAuthFunctionality.Application.Implementations
             await _userManager.UpdateAsync(existedUser);
             return Result<string>.Success("Code verified successfully. You can now log in.");
         }
+        public async  Task<Result<UserGetDto>> Profile()
+        {
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Result<UserGetDto>.Failure("Id", "User ID cannot be null", ErrorType.UnauthorizedError);
+            }
+            var existedUser = await _userManager.FindByIdAsync(userId);
+            if (existedUser == null)
+            {
+                if (existedUser is null) return Result<UserGetDto>.Failure("Id", "User ID cannot be null", ErrorType.UnauthorizedError);
+
+            }
+            var mappedUser = _mapper.Map<UserGetDto>(existedUser);
+            return Result<UserGetDto>.Success(mappedUser);
+        }
         //public async Task<string> AddRole()
         //{
         //    if (!await _roleManager.RoleExistsAsync("Admin"))

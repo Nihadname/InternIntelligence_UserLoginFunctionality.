@@ -71,5 +71,12 @@ namespace UserAuthFunctionality.Api.Controllers
             var result = await _mediator.Send(sendVerificationCodeCommand);
             return Ok(result);
         }
+        [HttpGet("Profile")]
+        [Authorize]
+        public async Task<IActionResult> Profile(ProfileCommand profileCommand)
+        {
+            var result = await _mediator.Send(profileCommand);
+            return Ok(result);
+        }
     }
 }
