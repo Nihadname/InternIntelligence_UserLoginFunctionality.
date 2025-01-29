@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35527.113 d17.12
+VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserAuthFunctionality.Api", "UserAuthFunctionality.Api\UserAuthFunctionality.Api.csproj", "{CEB41756-72C6-4B7C-8335-36627756D5B4}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserAuthFunctionality.DataAccess", "UserAuthFunctionality.DataAccess\UserAuthFunctionality.DataAccess.csproj", "{3FEF691B-6E03-4865-9F10-C4673B80EA52}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserAuthFunctionality.Core", "UserAuthFunctionality.Core\UserAuthFunctionality.Core.csproj", "{468CBEC7-71B2-438A-B7B6-FDA6A40D6849}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserAuthFunctionality.UnitTests", "UserAuthFunctionality.UnitTests\UserAuthFunctionality.UnitTests.csproj", "{8C9E248F-DF9A-47A2-8CB5-9035B74A6CFB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{468CBEC7-71B2-438A-B7B6-FDA6A40D6849}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{468CBEC7-71B2-438A-B7B6-FDA6A40D6849}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{468CBEC7-71B2-438A-B7B6-FDA6A40D6849}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C9E248F-DF9A-47A2-8CB5-9035B74A6CFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C9E248F-DF9A-47A2-8CB5-9035B74A6CFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C9E248F-DF9A-47A2-8CB5-9035B74A6CFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C9E248F-DF9A-47A2-8CB5-9035B74A6CFB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

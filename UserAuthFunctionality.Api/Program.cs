@@ -35,6 +35,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+//app.UseMiddleware<RequestTimingMiddleware>();
+
 app.UseRateLimiter();
 app.UseHttpsRedirection();
 app.UseRouting();
@@ -42,7 +44,6 @@ app.UseCors("AllowAllOrigins");
 app.UseMiddleware<CustomExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;

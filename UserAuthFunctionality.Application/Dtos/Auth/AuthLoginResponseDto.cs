@@ -10,5 +10,6 @@ namespace UserAuthFunctionality.Application.Dtos.Auth
     {
         public bool IsLogined { get; set; }
         public string Token { get; set; }
+        public string RefreshToken { get; set; }
     }
 }

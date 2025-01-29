@@ -9,7 +9,7 @@ using UserAuthFunctionality.Core.Entities;
 
 namespace UserAuthFunctionality.DataAccess.Configurations
 {
-    internal class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
+    public class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
     {
         public void Configure(EntityTypeBuilder<AppUser> builder)
         {

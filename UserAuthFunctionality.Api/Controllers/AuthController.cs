@@ -73,7 +73,7 @@ namespace UserAuthFunctionality.Api.Controllers
         }
         [HttpGet("Profile")]
         [Authorize]
-        public async Task<IActionResult> Profile(ProfileCommand profileCommand)
+        public async Task<IActionResult> Profile([FromQuery]ProfileCommand profileCommand)
         {
             var result = await _mediator.Send(profileCommand);
             return Ok(result);

@@ -21,6 +21,7 @@ namespace UserAuthFunctionality.Application.Features.Auth.Queries
         public async Task<Result<UserGetDto>> Handle(ProfileCommand request, CancellationToken cancellationToken)
         {
             return await _authService.Profile();
+            
         }
     }
 }

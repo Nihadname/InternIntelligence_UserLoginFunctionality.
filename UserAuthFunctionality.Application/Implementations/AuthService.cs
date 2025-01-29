@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
 using System.Security.Claims;
 using UserAuthFunctionality.Application.AppDefaults;
 using UserAuthFunctionality.Application.Dtos.Auth;
@@ -113,7 +114,7 @@ namespace UserAuthFunctionality.Application.Implementations
             var SecretKey = _jwtSettings.secretKey;
             var Issuer = _jwtSettings.Issuer;
             var refreshTokenGenerated = _tokenService.GenerateRefreshToken();
-            RefreshToken refreshToken= new RefreshToken { AppUser = User , AppUserId=User.Id,Token = refreshTokenGenerated };
+            RefreshToken refreshToken= new RefreshToken { AppUser = User , AppUserId=User.Id,Token = refreshTokenGenerated,Expires= DateTime.UtcNow.AddDays(7) };
             if (User.RefreshTokens == null)
             {
                 User.RefreshTokens = new List<RefreshToken>();
@@ -130,7 +131,8 @@ namespace UserAuthFunctionality.Application.Implementations
             return Result<AuthLoginResponseDto>.Success(new AuthLoginResponseDto
             {
                 IsLogined = true,
-                Token = _tokenService.GetToken(SecretKey, Audience, Issuer, User, roles)
+                Token = _tokenService.GetToken(SecretKey, Audience, Issuer, User, roles),
+                RefreshToken= refreshToken.Token,
             });
         }
         public async Task<Result<bool>> ValidateToken( string Authorization)
@@ -165,6 +167,7 @@ namespace UserAuthFunctionality.Application.Implementations
             var refreshTokenFetchingFromDatabase = await _applicationDbContext
                 .refreshTokens
                 .Include(s=>s.AppUser)
+                .OrderByDescending(s=>s.Expires)
                 .FirstOrDefaultAsync(s=>s.Token == refreshToken);
             if(refreshTokenFetchingFromDatabase == null)
                 return Result<AuthLoginResponseDto>.Failure("RefreshToken", "Invalid refresh token", ErrorType.UnauthorizedError);
@@ -181,7 +184,7 @@ namespace UserAuthFunctionality.Application.Implementations
             var Issuer = _jwtSettings.Issuer;
             var newrefreshTokenGenerated = _tokenService.GenerateRefreshToken();
             var newAccessToken = _tokenService.GetToken(SecretKey, Audience, Issuer, user, roles);
-            RefreshToken refreshTokenAsObject = new RefreshToken { AppUser = user, AppUserId = user.Id, Token = newrefreshTokenGenerated };
+            RefreshToken refreshTokenAsObject = new RefreshToken {AppUserId = user.Id, Token = newrefreshTokenGenerated, Expires = DateTime.UtcNow.AddDays(7) };
 
            await _applicationDbContext.refreshTokens.AddAsync(refreshTokenAsObject);
             await _applicationDbContext.SaveChangesAsync();
@@ -193,7 +196,7 @@ namespace UserAuthFunctionality.Application.Implementations
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTime.UtcNow.AddDays(7)
             });
-            return Result<AuthLoginResponseDto>.Success(new AuthLoginResponseDto { Token = newAccessToken });
+            return Result<AuthLoginResponseDto>.Success(new AuthLoginResponseDto { Token = newAccessToken, RefreshToken= refreshTokenAsObject.Token });
 
         }
         public async Task<Result<string>> UpdateImage(UserUpdateImageDto userUpdateImageDto)
@@ -260,6 +263,32 @@ namespace UserAuthFunctionality.Application.Implementations
             }
             var mappedUser = _mapper.Map<UserGetDto>(existedUser);
             return Result<UserGetDto>.Success(mappedUser);
+        }
+        public async Task<Result<string>> RevokeRefreshToken()
+        {
+            var refreshToken = _httpContextAccessor.HttpContext?.Request.Cookies["refreshToken"];
+
+            if (string.IsNullOrEmpty(refreshToken))
+                return Result<string>.Failure("RefreshToken", "Refresh token is missing", ErrorType.UnauthorizedError);
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Result<string>.Failure("Id", "User ID cannot be null", ErrorType.UnauthorizedError);
+            }
+            var existedUser = await _userManager.FindByIdAsync(userId);
+            if (existedUser == null)
+            {
+                if (existedUser is null) return Result<string>.Failure("Id", "User ID cannot be null", ErrorType.UnauthorizedError);
+            }
+            var existedRefreshToken=await _applicationDbContext.refreshTokens.Include(s=>s.AppUser).FirstOrDefaultAsync(s=>s.Token==refreshToken&&s.IsActive);
+            if (existedRefreshToken == null) return Result<string>.Failure("Id", "id with this  refresh token doesnt exist",ErrorType.NotFoundError);
+            if (existedRefreshToken.AppUser == null || existedRefreshToken.AppUser == existedUser)
+                return Result<string>.Failure("User", "User doesnt match or exists",ErrorType.NotFoundError);
+            existedRefreshToken.Revoked = DateTime.UtcNow;
+             _applicationDbContext.refreshTokens.Update(existedRefreshToken);
+            await _applicationDbContext.SaveChangesAsync();
+            return Result<string>.Success("revoked Token");
+
         }
         //public async Task<string> AddRole()
         //{
