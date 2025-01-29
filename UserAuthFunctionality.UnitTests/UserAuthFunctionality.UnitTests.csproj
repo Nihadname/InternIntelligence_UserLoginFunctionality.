@@ -15,6 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\UserAuthFunctionality.Application\UserAuthFunctionality.Application.csproj" />
+    <ProjectReference Include="..\UserAuthFunctionality.Core\UserAuthFunctionality.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 

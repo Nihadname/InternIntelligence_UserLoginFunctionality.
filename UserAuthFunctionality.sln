@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserAuthFunctionality.DataA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserAuthFunctionality.Core", "UserAuthFunctionality.Core\UserAuthFunctionality.Core.csproj", "{468CBEC7-71B2-438A-B7B6-FDA6A40D6849}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserAuthFunctionality.UnitTests", "UserAuthFunctionality.UnitTests\UserAuthFunctionality.UnitTests.csproj", "{8C9E248F-DF9A-47A2-8CB5-9035B74A6CFB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserAuthFunctionality.UnitTests", "UserAuthFunctionality.UnitTests\UserAuthFunctionality.UnitTests.csproj", "{CBC231B6-00A1-4C03-9C6F-43635267566C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,10 +35,10 @@ Global
 		{468CBEC7-71B2-438A-B7B6-FDA6A40D6849}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{468CBEC7-71B2-438A-B7B6-FDA6A40D6849}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{468CBEC7-71B2-438A-B7B6-FDA6A40D6849}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8C9E248F-DF9A-47A2-8CB5-9035B74A6CFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8C9E248F-DF9A-47A2-8CB5-9035B74A6CFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8C9E248F-DF9A-47A2-8CB5-9035B74A6CFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8C9E248F-DF9A-47A2-8CB5-9035B74A6CFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBC231B6-00A1-4C03-9C6F-43635267566C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBC231B6-00A1-4C03-9C6F-43635267566C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBC231B6-00A1-4C03-9C6F-43635267566C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBC231B6-00A1-4C03-9C6F-43635267566C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
