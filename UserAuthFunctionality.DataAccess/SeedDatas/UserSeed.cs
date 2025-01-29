@@ -29,7 +29,8 @@ namespace UserAuthFunctionality.DataAccess.SeedDatas
                     EmailConfirmed = true,
                     Image = null,
                     fullName = "Admin User",
-                    CreatedTime = DateTime.UtcNow
+                    CreatedTime = DateTime.UtcNow,
+                    IsEmailVerificationCodeValid = true,
                 };
 
                 var result = await userManager.CreateAsync(adminUser, adminPassword);

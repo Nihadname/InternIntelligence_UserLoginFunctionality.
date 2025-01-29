@@ -79,13 +79,11 @@ namespace UserAuthFunctionality.Api.Controllers
             return Ok(result);
         }
         [HttpPut("RevokeRefreshToken")]
+        [Authorize]
         public async Task<IActionResult> RevokeRefreshToken(RefreshTokenCommand refreshTokenCommand)
         {
             var result=await _mediator.Send(refreshTokenCommand);
             return Ok(result);
-        }
-        {
-
         }
     }
 }

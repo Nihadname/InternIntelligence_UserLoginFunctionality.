@@ -119,6 +119,7 @@ namespace UserAuthFunctionality.Application.Implementations
             {
                 User.RefreshTokens = new List<RefreshToken>();
             }
+            refreshToken.UpdateStatus();
             User.RefreshTokens.Add(refreshToken);
             await _userManager.UpdateAsync(User);
             _httpContextAccessor.HttpContext?.Response.Cookies.Append("refreshToken", refreshTokenGenerated, new CookieOptions
@@ -185,8 +186,8 @@ namespace UserAuthFunctionality.Application.Implementations
             var newrefreshTokenGenerated = _tokenService.GenerateRefreshToken();
             var newAccessToken = _tokenService.GetToken(SecretKey, Audience, Issuer, user, roles);
             RefreshToken refreshTokenAsObject = new RefreshToken {AppUserId = user.Id, Token = newrefreshTokenGenerated, Expires = DateTime.UtcNow.AddDays(7) };
-
-           await _applicationDbContext.refreshTokens.AddAsync(refreshTokenAsObject);
+            refreshTokenAsObject.UpdateStatus();
+            await _applicationDbContext.refreshTokens.AddAsync(refreshTokenAsObject);
             await _applicationDbContext.SaveChangesAsync();
 
             _httpContextAccessor.HttpContext?.Response.Cookies.Append("refreshToken", newrefreshTokenGenerated, new CookieOptions
@@ -285,6 +286,7 @@ namespace UserAuthFunctionality.Application.Implementations
             if (existedRefreshToken.AppUser == null || existedRefreshToken.AppUser == existedUser)
                 return Result<string>.Failure("User", "User doesnt match or exists",ErrorType.NotFoundError);
             existedRefreshToken.Revoked = DateTime.UtcNow;
+            existedRefreshToken.UpdateStatus();
              _applicationDbContext.refreshTokens.Update(existedRefreshToken);
             await _applicationDbContext.SaveChangesAsync();
             return Result<string>.Success("revoked Token");
