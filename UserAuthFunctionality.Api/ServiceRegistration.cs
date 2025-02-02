@@ -155,7 +155,7 @@ namespace UserAuthFunctionality.Api
                        errors += keyValues.Key + " : " + keyValues.Value + ", ";
                    }
 
-                   var response=Result<string>.Success(errors);
+                   var response=Result<string>.Failure(null, errors,ErrorType.ValidationError);
                    //var response = new
                    //{
                    //    message = "Validation errors occurred.",

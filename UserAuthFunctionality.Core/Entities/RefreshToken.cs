@@ -16,10 +16,11 @@ namespace UserAuthFunctionality.Core.Entities
         public bool IsExpired { get; set; }
         public bool IsActive { get; set; }
         public DateTime? Revoked { get; set; }
-        public void UpdateStatus()
+        public Task UpdateStatus()
         {
             IsExpired = DateTime.UtcNow >= Expires;
             IsActive = !IsExpired && Revoked == null;
+         return Task.CompletedTask;
         }
     }
 }
